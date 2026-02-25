@@ -1,102 +1,24 @@
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
-// #include "adc_manager.h"
-// #include "mpu6050_manager.h"
-// #define SYSTEM_FORCE_ENABLE  1   // 1 = 忽略电压条件
-
-// void app_main(void)
-// {
-//     adc_manager_init();
-//     mpu6050_init();
-
-//     while (1)
-//     {
-//         adc_manager_update();
-//         vTaskDelay(pdMS_TO_TICKS(500));
-//         mpu6050_update();
-//         vTaskDelay(pdMS_TO_TICKS(200));
-//     }
-// }
-
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
-// #include "mpu6050_manager.h"
-
-// void app_main(void)
-// {
-//     mpu6050_init();
-
-//     while (1)
-//     {
-//         mpu6050_update();
-//         vTaskDelay(pdMS_TO_TICKS(200));
-//     }
-// }
-
-
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
-// #include "mpu6050_manager.h"
-// #include "esp_log.h"
-// #include <math.h>
-
-// #define ANGLE_THRESHOLD 10.0
-// #define TRIGGER_TIME_MS 400
-
-// static const char *TAG = "MAIN";
-
-// void app_main(void)
-// {
-//     mpu6050_init();
-
-//     int trigger_counter = 0;
-//     int release_counter = 0;
-//     bool light_on = false;
-
-//     while (1)
-//     {
-//         mpu6050_update();
-
-//         float roll = mpu_get_roll();
-
-//         if (fabs(roll) > ANGLE_THRESHOLD)
-//         {
-//             trigger_counter += 50;
-//             release_counter = 0;
-
-//             if (trigger_counter >= TRIGGER_TIME_MS && !light_on)
-//             {
-//                 light_on = true;
-//                 ESP_LOGI(TAG, ">>> LIGHT ON <<<");
-//             }
-//         }
-//         else
-//         {
-//             release_counter += 50;
-//             trigger_counter = 0;
-
-//             if (release_counter >= TRIGGER_TIME_MS && light_on)
-//             {
-//                 light_on = false;
-//                 ESP_LOGI(TAG, ">>> LIGHT OFF <<<");
-//             }
-//         }
-
-//         vTaskDelay(pdMS_TO_TICKS(50));
-//     }
-// }
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "mpu6050_manager.h"
 #include "mos_control.h"
 #include <math.h>
+#include "esp_task_wdt.h"
 
 #define ANGLE_THRESHOLD 10.0
 #define TRIGGER_TIME_MS 400
 
 void app_main(void)
 {
+    // 初始化看门狗（3秒超时）
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = 3000,
+        .idle_core_mask = 0,
+        .trigger_panic = true,
+    };
+    // 初始化看门狗
+    esp_task_wdt_init(&twdt_config);
+    esp_task_wdt_add(NULL);  // 添加当前任务
     mpu6050_init();
     mos_init();
 
@@ -160,7 +82,8 @@ void app_main(void)
                 right_on = false;
             }
         }
-
+        // 喂狗
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
