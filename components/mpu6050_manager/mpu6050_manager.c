@@ -15,7 +15,7 @@
 static const char *TAG = "MPU6050";
 // ===== 低通滤波变量 =====
 static float roll_filtered = 0;
-static float pitch_filtered = 0;
+// static float pitch_filtered = 0;
 // ===== 互补滤波变量 =====
 static float gyro_roll = 0;
 static float roll_complementary = 0;
@@ -92,13 +92,13 @@ void mpu6050_update(void)
     uint8_t data[14];
     mpu_read(0x3B, data, 14);
 
-    int16_t ax = (data[0] << 8) | data[1];
+    // int16_t ax = (data[0] << 8) | data[1];
     int16_t ay = (data[2] << 8) | data[3];
     int16_t az = (data[4] << 8) | data[5];
     int16_t gx = (data[8] << 8) | data[9];
 
     float fgx = gx / 131.0;  // ±250dps
-    float fax = ax / 16384.0;
+    // float fax = ax / 16384.0;
     float fay = ay / 16384.0;
     float faz = az / 16384.0;
 
