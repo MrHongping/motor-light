@@ -2,7 +2,7 @@
 #include "freertos/task.h"
 #include "mpu6050_manager.h"
 #include "mos_control.h"
-#include <math.h>
+// #include <math.h>
 #include "esp_task_wdt.h"
 #include "adc_manager.h"
 
